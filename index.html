@@ -1196,30 +1196,7 @@
         }
 
         function restartGame() {
-            // Entferne Button falls noch vorhanden
-            const oldButton = document.getElementById('firework-button');
-            if (oldButton) {
-                oldButton.remove();
-            }
-            
-            gameContainer.style.display = 'block';
-            fireworksContainer.style.display = 'none';
-            fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
-            let fireworksParticles = [];
-            fireworkSound.pause();
-            helicopterSound.pause();
-            helicopterSound.currentTime = 0;
-            
-            startGame();
-            
-            // Musik neu starten
-            bgMusic.currentTime = 0;
-            const playPromise = bgMusic.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(error => {
-                    console.log("Background music restart failed:", error);
-                });
-            }
+            location.reload();
         }
 
         // Doppelklick-Funktionalität für Air-Jump
