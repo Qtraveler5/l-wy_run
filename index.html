@@ -960,19 +960,10 @@
                     obstacles[i].passed = true;
                     score++;
 
-                    // 3 Level: alle 6 Hürden steigt das Level
-                    const newLevel = Math.min(3, Math.floor(score / 6) + 1);
-                    if (newLevel > level) {
-                        level = newLevel;
+                    if (score % 6 === 0 && score > 0) {
+                        level++;
                         levelDisplay.textContent = `Level: ${level}`;
-                        // Sanfte, fixe Geschwindigkeitsschritte – kein Ramping
-                        // Level 1: 3, Level 2: 4.5, Level 3: 5.5
-                        const levelSpeeds = [3, 4.5, 5.5];
-                        gameSpeed = levelSpeeds[level - 1];
-                        // Spawn-Intervall moderat kürzer
-                        // Level 1: 2000ms, Level 2: 1600ms, Level 3: 1350ms
-                        const spawnIntervals = [2000, 1600, 1350];
-                        obstacleSpawnInterval = spawnIntervals[level - 1];
+                        gameSpeed += 1;
                     }
 
                     if (score >= WINNING_SCORE) {
