@@ -963,7 +963,9 @@
                     if (score % 6 === 0 && score > 0) {
                         level++;
                         levelDisplay.textContent = `Level: ${level}`;
-                        gameSpeed += 1;
+                        gameSpeed += 0.5;
+                        // Spawn-Intervall leicht verkürzen (min. 900ms)
+                        obstacleSpawnInterval = Math.max(900, obstacleSpawnInterval - 150);
                     }
 
                     if (score >= WINNING_SCORE) {
