@@ -1,14 +1,1340 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
+
 <head>
-    <title>My Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LÖWY-RUN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Balsamiq+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Balsamiq Sans', cursive;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #birthday-message {
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            background-color: #000;
+            transition: opacity 0.5s ease-in-out;
+            cursor: pointer;
+        }
+
+        .retro-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 4rem;
+            font-weight: normal;
+            color: #9370DB; /* VIOLETT */
+            text-shadow:
+                1px 1px 0 #330033,
+                2px 2px 0 #330033,
+                3px 3px 0 #330033,
+                4px 4px 0 #110011;
+            letter-spacing: 2px;
+            image-rendering: pixelated;
+        }
+
+        #start-button {
+            margin-top: 30px;
+            font-size: 1.5rem;
+            color: #C71585;
+            animation: pulse 1s infinite;
+            cursor: pointer;
+            padding: 20px 40px;
+            border: 3px solid #C71585;
+            border-radius: 10px;
+            background: rgba(199, 21, 133, 0.1);
+            transition: all 0.3s;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #start-button:hover {
+            background: rgba(199, 21, 133, 0.3);
+            transform: scale(1.05);
+        }
+
+        #game-container {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            background-color: #282a36;
+            display: block;
+            margin: 0 auto;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #fff;
+            text-shadow: 0 0 5px #000;
+            opacity: 0.8;
+        }
+
+        #level-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #fff;
+            text-shadow: 0 0 5px #000;
+        }
+
+        #fireworks-container {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+        }
+
+        #firework-button {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            margin-left: -90px;
+            font-size: 1.5rem;
+            color: #C71585;
+            animation: pulsate 1.5s infinite;
+            cursor: pointer;
+            padding: 20px 60px;
+            border: 4px solid #C71585;
+            border-radius: 15px;
+            background: rgba(199, 21, 133, 0.2);
+            transition: all 0.3s;
+            font-weight: bold;
+            z-index: 30;
+        }
+
+        #firework-button:hover {
+            background: rgba(199, 21, 133, 0.4);
+            transform: scale(1.05);
+        }
+
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                opacity: 0.7;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        @keyframes pulsate {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }        
+        @media (max-width: 768px) {
+            .retro-title {
+                font-family: 'Roboto', sans-serif;
+                font-size: 2.4rem;
+            }
+            #start-button {
+                font-size: 1.2rem;
+                padding: 15px 30px;
+            }
+            #instructions {
+                font-size: 1rem;
+            }
+            #level-display {
+                font-size: 1.2rem;
+            }
+            #firework-button {
+                font-size: 1.2rem;
+                padding: 15px 40px;
+                bottom: 80px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <audio controls>
-        <source src="sproing.mp3.mp3" type="audio/mpeg">
-        <source src="fail.mp3.mp3" type="audio/mpeg">
-        <source src="helicopter1.mp3.mp3" type="audio/mpeg">
-        Your browser does not support the audio element.
+    <audio id="bgMusic" loop preload="auto">
+        <source src="happy_birthday.mp3" type="audio/mpeg">
     </audio>
+    <audio id="jumpSound" preload="auto">
+        <source src="sproing.mp3.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="fireworkSound" preload="auto">
+        <source src="fireworkSound.mp3.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="failSound" preload="auto">
+        <source src="fail.mp3.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="helicopterSound" loop preload="auto">
+        <source src="helicopter1.mp3.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div id="birthday-message">
+        <h1 class="retro-title">LÖWY-RUN</h1>
+        <div id="start-button">KLICK ZUM STARTEN!</div>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="level-display">Level: 1</div>
+        <div id="instructions">Tap the screen to jump!</div>
+    </div>
+
+    <div id="fireworks-container">
+        <canvas id="fireworksCanvas"></canvas>
+    </div>
+
+    <script>
+        const birthdayMessage = document.getElementById('birthday-message');
+        const startButton = document.getElementById('start-button');
+        const gameContainer = document.getElementById('game-container');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const fireworksContainer = document.getElementById('fireworks-container');
+        const fireworksCanvas = document.getElementById('fireworksCanvas');
+        const fireworksCtx = fireworksCanvas.getContext('2d');
+        const levelDisplay = document.getElementById('level-display');
+        const bgMusic = document.getElementById('bgMusic');
+        const jumpSound = document.getElementById('jumpSound');
+        const fireworkSound = document.getElementById('fireworkSound');
+        const failSound = document.getElementById('failSound');
+        const helicopterSound = document.getElementById('helicopterSound');
+        
+        let player, obstacles, gameSpeed, score, gameRunning, level, bloodSplatterParticles, clouds, bannerPlane, citySkyline;
+        let gameStarted = false;
+        let helicopterActive = false;
+        const gravity = 0.5;
+        const jumpForce = -20;
+        const airJumpForce = -15;
+        const WINNING_SCORE = 18;
+        let obstacleSpawnTimer = 0;
+        let obstacleSpawnInterval = 2000;
+
+        // Audio-Kontext für Mobile Devices
+        let audioContext;
+        let audioInitialized = false;
+
+        function initAudio() {
+            if (audioInitialized) return;
+            
+            // Erstelle Audio Context für Mobile Geräte
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Erstelle dummy source um Audio zu entsperren
+                const source = audioContext.createBufferSource();
+                source.buffer = audioContext.createBuffer(1, 1, 22050);
+                source.connect(audioContext.destination);
+                source.start(0);
+                
+                // Setze Volume auf 0 für den dummy sound
+                source.gainValue = 0;
+                
+                audioInitialized = true;
+                console.log("Audio context initialized");
+            } catch (e) {
+                console.log("Audio context not supported:", e);
+            }
+        }
+
+        function playAudio(audioElement) {
+            if (!audioInitialized) {
+                initAudio();
+            }
+            
+            // Für Mobile Devices: Audio neu laden und abspielen
+            if (isMobileDevice()) {
+                audioElement.currentTime = 0;
+                const playPromise = audioElement.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("Audio play failed, trying again:", error);
+                        // Zweiter Versuch mit Timeout
+                        setTimeout(() => {
+                            audioElement.play().catch(e => console.log("Second attempt failed:", e));
+                        }, 100);
+                    });
+                }
+            } else {
+                audioElement.currentTime = 0;
+                audioElement.play().catch(e => console.log("Desktop audio error:", e));
+            }
+        }
+
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            fireworksCanvas.width = window.innerWidth;
+            fireworksCanvas.height = window.innerHeight;
+        }
+
+        // Initialisiere Canvas beim Laden
+        resizeCanvas();
+        window.addEventListener('resize', function () {
+            resizeCanvas();
+            if (player) {
+                player.y = canvas.height - player.height - 50;
+                player.targetHelicopterY = canvas.height / 2 - 50;
+            }
+        });
+
+        // Start-Button Funktionalität
+        function handleStartClick(e) {
+            if (e) e.preventDefault();
+            console.log('Start button clicked!');
+            
+            if (!gameStarted) {
+                gameStarted = true;
+                birthdayMessage.style.opacity = '0';
+                
+                // Audio initialisieren beim ersten Klick
+                initAudio();
+                
+                setTimeout(() => {
+                    birthdayMessage.style.display = 'none';
+                    gameContainer.style.display = 'block';
+                    startGame();
+                    
+                    // Musik mit User Interaction starten
+                    bgMusic.volume = 0.7;
+                    const playPromise = bgMusic.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("Background music play failed:", error);
+                        });
+                    }
+                }, 500);
+            }
+        }
+
+        // Event Listener für Start
+        startButton.addEventListener('click', handleStartClick);
+        startButton.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleStartClick(e);
+        }, {passive: false});
+        birthdayMessage.addEventListener('click', handleStartClick);
+        birthdayMessage.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleStartClick(e);
+        }, {passive: false});
+
+        class Player {
+            constructor() {
+                this.width = 40;
+                this.height = 70;
+                this.x = 100;
+                this.y = canvas.height - this.height - 50;
+                this.velocityY = 0;
+                this.jumping = false;
+                this.color = '#C71585'; // Dunkleres Rosa
+                this.legAngle = 0;
+                this.armAngle = 0;
+                this.canAirJump = true;
+                this.helicopterMode = false;
+                this.propellerAngle = 0;
+                
+                // VARIABLEN FÜR NATÜRLICHE BEWEGUNG
+                this.helicopterBobPhase = 0; // Phase der Auf-ABwärtsbewegung
+                this.helicopterBobSpeed = 0.03; // Geschwindigkeit der Bewegung (langsamer)
+                this.helicopterBobAmount = 3; // Stärke der Bewegung (kleiner: 3 statt 8 Pixel)
+                this.targetHelicopterY = canvas.height / 2 - 50; // Zielhöhe in der Mitte
+                this.helicopterLiftSpeed = 0.1; // Geschwindigkeit zum Erreichen der Zielhöhe
+            }
+
+            update() {
+                // Helicopter-Modus
+                if (this.helicopterMode) {
+                    // Sanfte Bewegung zur Zielhöhe
+                    const diffY = this.targetHelicopterY - this.y;
+                    if (Math.abs(diffY) > 1) {
+                        this.y += diffY * this.helicopterLiftSpeed;
+                    }
+                    
+                    // Natürliche Auf-ABwärtsbewegung
+                    this.helicopterBobPhase += this.helicopterBobSpeed;
+                    let bobOffset = Math.sin(this.helicopterBobPhase) * this.helicopterBobAmount;
+                    this.y += bobOffset;
+                    
+                    // Propeller drehen
+                    this.propellerAngle += 0.5;
+                    
+                } else {
+                    // Normaler Modus
+                    this.velocityY += gravity;
+                    this.y += this.velocityY;
+
+                    if (this.jumping) {
+                        this.legAngle = this.velocityY < 0 ? -0.7 : 0.7;
+                        this.armAngle = this.velocityY < 0 ? 0.7 : -0.7;
+                    } else {
+                        this.legAngle = 0;
+                        this.armAngle = 0;
+                    }
+
+                    if (this.y > canvas.height - this.height - 50) {
+                        this.y = canvas.height - this.height - 50;
+                        this.jumping = false;
+                        this.velocityY = 0;
+                        this.canAirJump = true;
+                    }
+                }
+            }
+
+            jump(isAirJump = false) {
+                if (!this.jumping) {
+                    this.velocityY = jumpForce;
+                    this.jumping = true;
+                    playAudio(jumpSound);
+                } else if (this.jumping && this.canAirJump && isAirJump) {
+                    this.velocityY = airJumpForce;
+                    this.canAirJump = false;
+                    playAudio(jumpSound);
+                }
+            }
+
+            draw() {
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 3;
+
+                // Propeller (nur im Helicopter-Modus)
+                if (this.helicopterMode) {
+                    ctx.save();
+                    ctx.translate(this.x + this.width / 2, this.y + 5);
+    
+                    // Hauptrotation des Propellers
+                    ctx.rotate(this.propellerAngle);
+    
+                    // Seitenansicht - 2 Rotorblätter als Ellipse (perspektivisch verkürzt)
+                    ctx.strokeStyle = this.color;
+                    ctx.lineWidth = 2.5;
+                    ctx.lineCap = 'round';
+    
+                    // Hauptrotorblatt (horizontal, voll sichtbar)
+                    ctx.beginPath();
+                    ctx.moveTo(-25, 0);
+                    ctx.lineTo(25, 0);
+                    ctx.stroke();
+                    
+                    // Perspektivisch verkürztes Blatt (senkrecht, nur als kurze Linie sichtbar)
+                    ctx.save();
+                    ctx.rotate(Math.PI / 2);
+                    ctx.lineWidth = 1.5;
+                    ctx.globalAlpha = 0.6; // Leicht transparent für Tiefeneffekt
+                    ctx.beginPath();
+                    ctx.moveTo(-4, 0);
+                    ctx.lineTo(4, 0);
+                    ctx.stroke();
+                    ctx.restore();
+    
+                    // Zentrale Achse/Nabe
+                    ctx.globalAlpha = 1;
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Kleine Highlights auf der Nabe
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(-1, -1, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+    
+                    ctx.restore();
+                }
+
+                // Kopf
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(this.x + this.width / 2, this.y + 15, 15, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Großer Smiley im Helicopter-Modus
+                if (this.helicopterMode) {
+                    // Mund (lächelnd)
+                    ctx.beginPath();
+                    ctx.arc(this.x + this.width / 2, this.y + 18, 8, 0.1 * Math.PI, 0.9 * Math.PI);
+                    ctx.stroke();
+                }
+
+                // Körper
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y + 30);
+                ctx.lineTo(this.x + this.width / 2, this.y + 60);
+                ctx.stroke();
+
+                // Beine
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y + 60);
+                ctx.lineTo(this.x + this.width / 2 - 10 + this.legAngle * 5, this.y + 70);
+                ctx.lineTo(this.x + this.width / 2 - 15 + this.legAngle * 10, this.y + 80);
+                ctx.moveTo(this.x + this.width / 2, this.y + 60);
+                ctx.lineTo(this.x + this.width / 2 + 10 + this.legAngle * 5, this.y + 70);
+                ctx.lineTo(this.x + this.width / 2 + 15 + this.legAngle * 10, this.y + 80);
+                ctx.stroke();
+
+                // Arme
+                ctx.beginPath();
+                ctx.moveTo(this.x + this.width / 2, this.y + 40);
+                ctx.lineTo(this.x + this.width / 2 - 10 + this.armAngle * 5, this.y + 45);
+                ctx.lineTo(this.x + this.width / 2 - 15 + this.armAngle * 10, this.y + 50);
+                ctx.moveTo(this.x + this.width / 2, this.y + 40);
+                ctx.lineTo(this.x + this.width / 2 + 10 + this.armAngle * 5, this.y + 45);
+                ctx.lineTo(this.x + this.width / 2 + 15 + this.armAngle * 10, this.y + 50);
+                ctx.stroke();
+            }
+        }
+
+        class CitySkyline {
+            constructor() {
+                this.buildings = [];
+                this.generateBuildings();
+            }
+
+            generateBuildings() {
+                const buildingCount = 15;
+                const maxHeight = 150;
+                const minHeight = 50;
+
+                for (let i = 0; i < buildingCount; i++) {
+                    const width = Math.random() * 80 + 40;
+                    const height = Math.random() * (maxHeight - minHeight) + minHeight;
+                    const x = (i * canvas.width / buildingCount) - 20;
+
+                    const windows = [];
+                    const windowCols = Math.floor(Math.random() * 5) + 3;
+                    const windowRows = 3;
+
+                    for (let c = 1; c <= windowCols; c++) {
+                        for (let r = 1; r <= windowRows; r++) {
+                            const isOn = Math.random() > 0.3;
+                            windows.push({ c, r, on: isOn });
+                        }
+                    }
+
+                    this.buildings.push({
+                        x: x,
+                        width: width,
+                        height: height,
+                        color: `hsl(${200 + Math.random() * 20}, 70%, ${20 + Math.random() * 10}%)`,
+                        windowCols,
+                        windows
+                    });
+                }
+                
+                // Funkturm (Berliner TV-Turm Stil)
+                this.tower = {
+                    x: canvas.width - 50,
+                    shaftWidth: 12,
+                    shaftHeight: 160,
+                    sphereRadius: 20,
+                    antennaHeight: 64,
+                    color: '#888888'
+                };
+            }
+
+            drawBuildings() {
+                // Zeichne Gebäude
+                for (const b of this.buildings) {
+                    ctx.fillStyle = b.color;
+                    ctx.fillRect(b.x, canvas.height - 50 - b.height, b.width, b.height);
+
+                    ctx.fillStyle = 'rgba(255, 255, 200, 0.3)';
+                    const windowWidth = b.width / (b.windowCols + 1);
+                    const windowHeight = 10;
+
+                    for (let w of b.windows) {
+                        if (w.on) {
+                            ctx.fillRect(
+                                b.x + w.c * windowWidth - windowWidth / 2,
+                                canvas.height - 50 - b.height + w.r * 20,
+                                windowWidth - 4,
+                                windowHeight
+                            );
+                        }
+                    }
+                }
+            }
+            
+            drawTower() {
+                // Zeichne Funkturm
+                const t = this.tower;
+                const groundY = canvas.height - 50;
+                const shaftY = groundY - t.shaftHeight;
+                const sphereY = shaftY - t.sphereRadius;
+                const antennaY = sphereY - t.sphereRadius - t.antennaHeight;
+                
+                // Schaft (dünner Turm)
+                ctx.fillStyle = '#999999';
+                ctx.fillRect(t.x - t.shaftWidth/2, shaftY, t.shaftWidth, t.shaftHeight);
+                
+                // Kugel (Alexanderplatz-Stil)
+                ctx.fillStyle = '#c0c0c0';
+                ctx.beginPath();
+                ctx.arc(t.x, sphereY, t.sphereRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glanz auf Kugel
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.beginPath();
+                ctx.arc(t.x - 5, sphereY - 5, 7, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Antenne oben
+                ctx.strokeStyle = '#666666';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(t.x, sphereY - t.sphereRadius);
+                ctx.lineTo(t.x, antennaY);
+                ctx.stroke();
+                
+                // Rote Warnlichter auf Antenne
+                ctx.fillStyle = '#ff0000';
+                ctx.beginPath();
+                ctx.arc(t.x, antennaY + 13, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(t.x, antennaY + 33, 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Speichere Kugel-Position für Klick-Erkennung
+                this.sphereHitbox = {
+                    x: t.x,
+                    y: sphereY,
+                    radius: t.sphereRadius
+                };
+            }
+            
+            draw() {
+                this.drawTower();
+                this.drawBuildings();
+            }
+        }
+
+        class BannerPlane {
+            constructor() {
+                this.width = 120;
+                this.height = 60;
+                this.x = -this.width;
+                this.y = 100;
+                this.speed = 2;
+                this.bannerWave = 0;
+                this.active = false;
+                this.appearanceTimer = 0;
+            }
+
+            update() {
+                if (!this.active) {
+                    this.appearanceTimer++;
+                    if (this.appearanceTimer > 600 + Math.random() * 300) {
+                        this.active = true;
+                        this.x = -this.width;
+                        this.appearanceTimer = 0;
+                    }
+                    return;
+                }
+
+                this.x += this.speed;
+                this.bannerWave += 0.1;
+
+                if (this.x > canvas.width) {
+                    this.active = false;
+                }
+            }
+
+            draw() {
+                if (!this.active) return;
+
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.roundRect(this.x, this.y, this.width, 20, 8);
+                ctx.fill();
+
+                ctx.fillStyle = '#87CEEB';
+                ctx.beginPath();
+                ctx.ellipse(this.x + this.width - 15, this.y + 10, 12, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#cccccc';
+                ctx.fillRect(this.x + 20, this.y - 8, 60, 6);
+                ctx.fillRect(this.x + 25, this.y + 22, 50, 6);
+
+                ctx.save();
+                ctx.translate(this.x - 5, this.y + 10);
+                ctx.rotate(this.bannerWave * 10);
+                ctx.fillStyle = '#999';
+                ctx.fillRect(-1, -12, 2, 24);
+                ctx.restore();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x + 10, this.y + 30);
+                ctx.lineTo(this.x - 30, this.y + 40);
+                ctx.stroke();
+
+                const bannerY = this.y + 30 + Math.sin(this.bannerWave) * 3;
+                ctx.fillStyle = '#C71585'; // Dunkleres Rosa
+                ctx.fillRect(this.x - 180, bannerY, 170, 24);
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 14px Balsamiq Sans';
+                ctx.textAlign = 'center';
+                ctx.fillText('GO GERNOT GO!!', this.x - 95, bannerY + 16);
+            }
+        }
+
+        const OBSTACLE_TYPES = [
+            { name: "JULIA", width: 60, height: 30, color: '#ff5555' },
+            { name: "MAMA", width: 40, height: 20, color: '#3a7ed9' },
+            { name: "MAMA", width: 40, height: 20, color: '#3a7ed9', y_offset: 80 },
+            { name: "MATILDA", width: 80, height: 40, color: '#ffa500', y_offset: 50 },
+            { name: "CELIO", width: 70, height: 40, color: '#008800' },
+            { name: "GAJA", width: 90, height: 50, color: '#bd93f9', y_offset: 80 },
+            { name: "KATHI", width: 30, height: 80, color: '#ff79c6' }
+        ];
+
+        class Obstacle {
+            constructor() {
+                const type = OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)];
+                this.width = type.width;
+                this.height = type.height;
+                this.color = type.color;
+                this.name = type.name;
+                const y_offset = type.y_offset || 0;
+                this.x = canvas.width;
+                this.y = canvas.height - this.height - 50 - y_offset;
+                this.passed = false;
+            }
+
+            update() {
+                this.x -= gameSpeed;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+
+                // Namen werden nicht mehr angezeigt
+            }
+        }
+
+        class Cloud {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * 150 + 50;
+                this.speed = Math.random() * 0.5 + 0.2;
+                this.size = Math.random() * 40 + 20;
+            }
+
+            update() {
+                this.x -= this.speed;
+                if (this.x < -100) {
+                    this.x = canvas.width + 50;
+                    this.y = Math.random() * 150 + 50;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(this.x + this.size * 0.8, this.y - this.size * 0.2, this.size * 0.7, 0, Math.PI * 2);
+                ctx.arc(this.x + this.size * 1.5, this.y, this.size * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        class BloodParticle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.color = '#ff5555';
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 5,
+                    y: (Math.random() - 1) * 5
+                };
+                this.alpha = 1;
+                this.decay = Math.random() * 0.05 + 0.01;
+                this.size = Math.random() * 3 + 1;
+            }
+
+            update() {
+                this.velocity.y += 0.2;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 12,
+                    y: (Math.random() - 0.5) * 12
+                };
+                this.alpha = 1;
+                this.decay = Math.random() * 0.02 + 0.01;
+            }
+
+            update() {
+                this.velocity.y += 0.05;
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                fireworksCtx.globalAlpha = this.alpha;
+                fireworksCtx.fillStyle = this.color;
+                fireworksCtx.beginPath();
+                fireworksCtx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+                fireworksCtx.fill();
+            }
+        }
+
+        function startGame() {
+            console.log('Starting game...');
+            player = new Player();
+            obstacles = [];
+            bloodSplatterParticles = [];
+            clouds = [];
+            bannerPlane = new BannerPlane();
+            citySkyline = new CitySkyline();
+            gameSpeed = 3;
+            score = 0;
+            level = 1;
+            gameRunning = true;
+            obstacleSpawnTimer = 0;
+            obstacleSpawnInterval = 2000;
+            levelDisplay.textContent = `Level: ${level}`;
+
+            for (let i = 0; i < 5; i++) {
+                clouds.push(new Cloud());
+            }
+
+            gameLoop();
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Zeichne Funkturm ZUERST (hinter Gebäuden)
+            citySkyline.drawTower();
+
+            // Dann Gebäude (verdecken unteren Teil des Turms)
+            citySkyline.drawBuildings();
+
+            for (let cloud of clouds) {
+                cloud.update();
+                cloud.draw();
+            }
+
+            bannerPlane.update();
+            bannerPlane.draw();
+
+            ctx.fillStyle = '#4a4a6a';
+            ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+            ctx.fillStyle = '#5a5a8a';
+            for (let i = 0; i < canvas.width; i += 40) {
+                ctx.fillRect(i, canvas.height - 50, 20, 5);
+            }
+
+            player.update();
+            player.draw();
+
+            // Hindernis-Spawn-System
+            obstacleSpawnTimer += 16; // ~60fps
+            if (obstacleSpawnTimer >= obstacleSpawnInterval) {
+                obstacleSpawnTimer = 0;
+                
+                if (gameRunning && Math.random() < 0.7) {
+                    let canAddObstacle = true;
+                    // Im Helicopter-Modus: geringerer Mindestabstand für mehr Hindernisse
+                    const minDistance = player.helicopterMode ? 150 : 300;
+
+                    for (let obstacle of obstacles) {
+                        if (obstacle.x > canvas.width - minDistance) {
+                            canAddObstacle = false;
+                            break;
+                        }
+                    }
+
+                    if (canAddObstacle) {
+                        obstacles.push(new Obstacle());
+                    }
+                }
+            }
+
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                // Im Helicopter-Modus sind Hindernisse 12x schneller und spawnen häufiger
+                if (player.helicopterMode) {
+                    obstacles[i].x -= gameSpeed * 150;
+                } else {
+                    obstacles[i].update();
+                }
+                obstacles[i].draw();
+
+                if (detectCollision(player, obstacles[i])) {
+                    createBloodSplatter(player.x + player.width / 2, player.y + player.height / 2);
+                    gameOver();
+                    return;
+                }
+
+                if (!obstacles[i].passed && obstacles[i].x + obstacles[i].width < player.x) {
+                    obstacles[i].passed = true;
+                    score++;
+
+                    // 3 Level: alle 6 Hürden steigt das Level
+                    const newLevel = Math.min(3, Math.floor(score / 6) + 1);
+                    if (newLevel > level) {
+                        level = newLevel;
+                        levelDisplay.textContent = `Level: ${level}`;
+                        // Sanfte, fixe Geschwindigkeitsschritte – kein Ramping
+                        // Level 1: 3, Level 2: 4.5, Level 3: 5.5
+                        const levelSpeeds = [3, 4.5, 5.5];
+                        gameSpeed = levelSpeeds[level - 1];
+                        // Spawn-Intervall moderat kürzer
+                        // Level 1: 2000ms, Level 2: 1600ms, Level 3: 1350ms
+                        const spawnIntervals = [2000, 1600, 1350];
+                        obstacleSpawnInterval = spawnIntervals[level - 1];
+                    }
+
+                    if (score >= WINNING_SCORE) {
+                        // Wichtig: Helicopter-Modus beenden und Audio stoppen
+                        if (player.helicopterMode) {
+                            player.helicopterMode = false;
+                            helicopterActive = false;
+                        }
+                        helicopterSound.pause();
+                        helicopterSound.currentTime = 0;
+                        showFireworks();
+                        return;
+                    }
+                }
+
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            for (let i = bloodSplatterParticles.length - 1; i >= 0; i--) {
+                bloodSplatterParticles[i].update();
+                bloodSplatterParticles[i].draw();
+
+                if (bloodSplatterParticles[i].alpha <= 0) {
+                    bloodSplatterParticles.splice(i, 1);
+                }
+            }
+
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = '#fff';
+            ctx.font = '24px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText('Hürden geschafft: ' + score, 20, 40);
+
+            if (gameRunning) {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function createBloodSplatter(x, y) {
+            for (let i = 0; i < 30; i++) {
+                bloodSplatterParticles.push(new BloodParticle(x, y));
+            }
+        }
+
+        function detectCollision(player, obstacle) {
+            return player.x < obstacle.x + obstacle.width &&
+                player.x + player.width > obstacle.x &&
+                player.y < obstacle.y + obstacle.height &&
+                player.y + player.height > obstacle.y;
+        }
+
+        function gameOver() {
+            gameRunning = false;
+            bgMusic.pause();
+            helicopterSound.pause();
+            helicopterSound.currentTime = 0;
+
+            playAudio(failSound);
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#fff';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2 - 50);
+
+            ctx.font = '36px Arial';
+            ctx.fillText('Hürden geschafft: ' + score, canvas.width / 2, canvas.height / 2);
+
+            ctx.font = '24px Arial';
+            ctx.fillText('Tap to restart', canvas.width / 2, canvas.height / 2 + 50);
+
+            document.addEventListener('click', restartGame, { once: true });
+            document.addEventListener('touchstart', restartGame, { once: true });
+        }
+
+        function showFireworks() {
+            gameRunning = false;
+            bgMusic.pause();
+        
+            // Stoppe und reset alle Audio-Elemente
+            helicopterSound.pause();
+            helicopterSound.currentTime = 0;
+        
+            gameContainer.style.display = 'none';
+            fireworksContainer.style.display = 'block';
+
+            let fireworksParticles = [];
+            let floatingPlayer = new Player();
+            floatingPlayer.x = fireworksCanvas.width / 2 - floatingPlayer.width / 2;
+            floatingPlayer.y = fireworksCanvas.height / 2 + 50; 
+            floatingPlayer.velocityY = 0; // Steht still
+            floatingPlayer.jumping = false;
+            
+            let fireworkStarted = false;
+
+            // Erstelle Button
+            const fireworkButton = document.createElement('div');
+            fireworkButton.id = 'firework-button';
+            fireworkButton.textContent = 'FEUERWERK ';
+            fireworksContainer.appendChild(fireworkButton);
+
+            // Button Click Handler
+            function startFireworkShow(e) {
+                if (e) e.preventDefault();
+                if (fireworkStarted) return;
+                
+                fireworkStarted = true;
+                fireworkButton.style.display = 'none';
+                
+                // Starte Flug nach oben
+                floatingPlayer.velocityY = -3;
+                floatingPlayer.jumping = true;
+                
+                // Starte Audio
+                setTimeout(() => {
+                    fireworkSound.volume = 0.8;
+                    playAudio(fireworkSound);
+                }, 100);
+                
+                // Starte Feuerwerk
+                const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        createFirework(
+                            Math.random() * fireworksCanvas.width,
+                            Math.random() * fireworksCanvas.height / 2,
+                            colors[Math.floor(Math.random() * colors.length)]
+                        );
+                    }, i * 800);
+                }
+                
+                // Zeige Restart-Text nach 5 Sekunden
+                setTimeout(() => {
+                    showRestartText = true;
+                    document.addEventListener('click', restartGame, { once: true });
+                    document.addEventListener('touchstart', restartGame, { once: true });
+                }, 5000);
+            }
+
+            fireworkButton.addEventListener('click', startFireworkShow);
+            fireworkButton.addEventListener('touchstart', startFireworkShow, { passive: false });
+
+            function createFirework(x, y, color) {
+                for (let i = 0; i < 100; i++) {
+                    fireworksParticles.push(new Particle(x, y, color));
+                }
+            }
+
+            let showRestartText = false;
+
+            function animateFireworks() {
+                fireworksCtx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                fireworksCtx.fillRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+
+                // Partikel nur wenn Feuerwerk gestartet
+                if (fireworkStarted) {
+                    for (let i = fireworksParticles.length - 1; i >= 0; i--) {
+                        fireworksParticles[i].update();
+                        fireworksParticles[i].draw();
+
+                        if (fireworksParticles[i].alpha <= 0) {
+                            fireworksParticles.splice(i, 1);
+                        }
+                    }
+                }
+
+                // Player Bewegung nur wenn Feuerwerk gestartet
+                if (fireworkStarted) {
+                    floatingPlayer.y += floatingPlayer.velocityY;
+                }
+                
+                // Zeichne Player
+                floatingPlayer.draw = function () {
+                    fireworksCtx.strokeStyle = this.color;
+                    fireworksCtx.lineWidth = 3;
+
+                    fireworksCtx.beginPath();
+                    fireworksCtx.arc(this.x + this.width / 2, this.y + 15, 15, 0, Math.PI * 2);
+                    fireworksCtx.stroke();
+
+                    fireworksCtx.beginPath();
+                    fireworksCtx.moveTo(this.x + this.width / 2, this.y + 30);
+                    fireworksCtx.lineTo(this.x + this.width / 2, this.y + 60);
+                    fireworksCtx.stroke();
+
+                    fireworksCtx.beginPath();
+                    fireworksCtx.moveTo(this.x + this.width / 2, this.y + 60);
+                    fireworksCtx.lineTo(this.x + this.width / 2 - 10, this.y + 75);
+                    fireworksCtx.moveTo(this.x + this.width / 2, this.y + 60);
+                    fireworksCtx.lineTo(this.x + this.width / 2 + 10, this.y + 75);
+                    fireworksCtx.stroke();
+
+                    fireworksCtx.beginPath();
+                    fireworksCtx.moveTo(this.x + this.width / 2, this.y + 40);
+                    fireworksCtx.lineTo(this.x + this.width / 2 - 15, this.y + 25);
+                    fireworksCtx.moveTo(this.x + this.width / 2, this.y + 40);
+                    fireworksCtx.lineTo(this.x + this.width / 2 + 15, this.y + 25);
+                    fireworksCtx.stroke();
+                };
+                floatingPlayer.draw();
+
+                // Texte
+                fireworksCtx.globalAlpha = 1;
+                fireworksCtx.fillStyle = '#fff';
+
+                const isMobile = window.innerWidth < 768;
+                const mainTextSize = isMobile ? '24px' : '48px';
+                const subTextSize = isMobile ? '16px' : '36px';
+
+                fireworksCtx.font = mainTextSize + ' Balsamiq Sans';
+                fireworksCtx.textAlign = 'center';
+                fireworksCtx.fillText('GRATULATION!', fireworksCanvas.width / 2, isMobile ? 80 : 100);
+                fireworksCtx.font = subTextSize + ' Arial';
+                fireworksCtx.fillText("Du hast alle Herausforderungen gemeistert!", fireworksCanvas.width / 2, isMobile ? 140 : 160);
+                
+                // Restart Text
+                if (showRestartText) {
+                    fireworksCtx.font = '24px Arial';
+                    fireworksCtx.fillText('Tippe, um erneut zu spielen', fireworksCanvas.width / 2, fireworksCanvas.height - 50);
+                }
+                
+                requestAnimationFrame(animateFireworks);
+            }
+
+            animateFireworks();
+        }
+
+        function restartGame() {
+            window.location.reload();
+        }
+
+        // Doppelklick-Funktionalität für Air-Jump
+        let lastTapTime = 0;
+        const tapDelay = 300;
+
+        // Verbesserte Touch- und Mouse-Event-Handling
+        function handleGameInput(isDoubleTap = false) {
+            if (!gameRunning || !player) return;
+            
+            if (isDoubleTap && player.jumping) {
+                player.jump(true);
+            } else {
+                player.jump();
+            }
+        }
+
+        // Touch Events
+        document.addEventListener('touchstart', function (e) {
+            e.preventDefault();
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+
+            if (tapLength < tapDelay && tapLength > 0) {
+                handleGameInput(true);
+            } else {
+                handleGameInput(false);
+            }
+            lastTapTime = currentTime;
+        }, { passive: false });
+
+        // Mouse Events
+        document.addEventListener('mousedown', function () {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+
+            if (tapLength < tapDelay && tapLength > 0) {
+                handleGameInput(true);
+            } else {
+                handleGameInput(false);
+            }
+            lastTapTime = currentTime;
+        });
+
+        // Funkturm-Kugel Touch-Handler - verbessert für Mobile
+        
+        function handleHelicopterInput(start, x, y) {
+            if (!gameRunning || !citySkyline || !player) return;
+            
+            const sphere = citySkyline.sphereHitbox;
+            if (!sphere) return;
+            
+            const dist = Math.sqrt((x - sphere.x) ** 2 + (y - sphere.y) ** 2);
+            
+            if (dist < sphere.radius * 1.5) { // Vergrößerte Hitbox für Mobile
+                if (start && !helicopterActive) {
+                    helicopterActive = true;
+                    player.helicopterMode = true;
+                    // Im Helicopter-Modus: Hindernisse spawnen schneller
+                    obstacleSpawnInterval = 500;
+                    playAudio(helicopterSound);
+                } else if (!start && helicopterActive) {
+                    helicopterActive = false;
+                    player.helicopterMode = false;
+                    // Zurück zur normalen Spawn-Geschwindigkeit
+                    obstacleSpawnInterval = 2000;
+                    helicopterSound.pause();
+                    helicopterSound.currentTime = 0;
+                }
+                return true;
+            }
+            return false;
+        }
+        
+        // Touch Events für Helicopter
+        canvas.addEventListener('touchstart', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            
+            if (handleHelicopterInput(true, x, y)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', function(e) {
+            if (helicopterActive) {
+                e.preventDefault();
+                handleHelicopterInput(false, 0, 0);
+            }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', function(e) {
+            if (helicopterActive) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Mouse Events für Helicopter
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            handleHelicopterInput(true, x, y);
+        });
+        
+        canvas.addEventListener('mouseup', function() {
+            if (helicopterActive) {
+                handleHelicopterInput(false, 0, 0);
+            }
+        });
+
+        // Verhindere Kontextmenü auf Mobile
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // Initialisiere Audio beim ersten Tap auf die Seite
+        document.addEventListener('touchstart', function() {
+            initAudio();
+        }, { once: true });
+
+        document.addEventListener('mousedown', function() {
+            initAudio();
+        }, { once: true });
+    </script>
 </body>
+
 </html>
