@@ -942,9 +942,9 @@
             }
 
             for (let i = obstacles.length - 1; i >= 0; i--) {
-                // Im Helicopter-Modus sind Hindernisse 12x schneller und spawnen häufiger
+                // Im Helicopter-Modus sind Hindernisse schneller und spawnen häufiger
                 if (player.helicopterMode) {
-                    obstacles[i].x -= gameSpeed * 150;
+                    obstacles[i].x -= gameSpeed * 16;
                 } else {
                     obstacles[i].update();
                 }
